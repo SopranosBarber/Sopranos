@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sopranos Barber — Inscription Staff</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--gold:#C9A84C;--gold-light:#E8CC7A;--black:#0C0C0C;--surface:#1A1A1A;--surface2:#222;--cream:#F5F0E8;--gray:#8A8A8A;--border:rgba(201,168,76,0.2);--green:#10b981;--red:#ef4444;}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--cream);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.page{width:100%;max-width:480px;}
+.logo{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:6px;}
+.subtitle{text-align:center;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:36px;}
+.box{background:var(--surface);border:1px solid var(--border);padding:40px 36px;}
+.step{display:none;}.step.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.step-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;}
+.step-sub{color:var(--gray);font-size:.82rem;margin-bottom:28px;line-height:1.6;}
+.fl{display:block;font-size:.67rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;margin-top:16px;}
+.fl:first-child{margin-top:0;}
+.fi{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--cream);padding:12px 14px;font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:border .3s;}
+.fi:focus{border-color:var(--gold);}
+.hours-row{display:flex;gap:12px;align-items:center;}
+.hours-row select{flex:1;}
+.hours-sep{color:var(--gray);font-size:.82rem;flex-shrink:0;}
+.btn{width:100%;background:var(--gold);color:var(--black);border:none;padding:14px;font-weight:700;font-size:.82rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:24px;transition:background .3s;}
+.btn:hover{background:var(--gold-light);}
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px 14px;font-size:.8rem;color:#fca5a5;margin-top:14px;display:none;}
+.success-screen{text-align:center;padding:20px 0;}
+.success-icon{font-size:3.5rem;margin-bottom:16px;}
+.success-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:10px;}
+.success-sub{color:var(--gray);font-size:.85rem;line-height:1.7;}
+.code-input{text-align:center;font-size:1.6rem;letter-spacing:8px;font-weight:700;font-family:monospace;}
+.back-link{display:block;text-align:center;color:var(--gray);font-size:.78rem;margin-top:20px;text-decoration:none;}
+.back-link:hover{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="logo">SOPRANOS</div>
+  <div class="subtitle">Inscription du Personnel</div>
+  <div class="box">
+    <!-- STEP 1: Code -->
+    <div class="step active" id="step1">
+      <div class="step-title">Code d'accès staff</div>
+      <div class="step-sub">Entrez le code fourni par le gérant pour vous inscrire comme membre du personnel.</div>
+      <label class="fl">Code de vérification</label>
+      <input class="fi code-input" id="reg-code" type="text" placeholder="••••••••••" maxlength="12">
+      <div class="err" id="err1">Code incorrect. Contactez le gérant.</div>
+      <button class="btn" onclick="checkCode()">Vérifier le code</button>
+    </div>
+
+    <!-- STEP 2: Profile -->
+    <div class="step" id="step2">
+      <div class="step-title">Créez votre profil</div>
+      <div class="step-sub">Ces informations seront visibles par les clients lors de la réservation.</div>
+      <label class="fl">Votre prénom (affiché aux clients)</label>
+      <input class="fi" id="reg-name" type="text" placeholder="Mohammed">
+      <label class="fl">Mot de passe (pour votre espace staff)</label>
+      <input class="fi" id="reg-pass" type="password" placeholder="Minimum 6 caractères">
+      <label class="fl">Confirmer le mot de passe</label>
+      <input class="fi" id="reg-pass2" type="password" placeholder="Répéter le mot de passe">
+      <div class="err" id="err2"></div>
+      <button class="btn" onclick="goStep3()">Continuer</button>
+    </div>
+
+    <!-- STEP 3: Work hours -->
+    <div class="step" id="step3">
+      <div class="step-title">Vos horaires de travail</div>
+      <div class="step-sub">Ces horaires définissent les créneaux disponibles à la réservation pour votre profil.</div>
+      <label class="fl">Heure de début</label>
+      <div class="hours-row">
+        <select class="fi" id="reg-start">
+          <option value="7">07h00</option><option value="8">08h00</option>
+          <option value="9" selected>09h00</option><option value="10">10h00</option>
+          <option value="11">11h00</option><option value="12">12h00</option>
+        </select>
+        <span class="hours-sep">→</span>
+        <select class="fi" id="reg-end">
+          <option value="17">17h00</option><option value="18">18h00</option>
+          <option value="19">19h00</option><option value="20">20h00</option>
+          <option value="21">21h00</option><option value="22">22h00</option>
+          <option value="23" selected>23h00</option>
+        </select>
+      </div>
+      <div class="err" id="err3"></div>
+      <button class="btn" onclick="finishRegister()">Terminer l'inscription</button>
+    </div>
+
+    <!-- STEP 4: Success -->
+    <div class="step" id="step4">
+      <div class="success-screen">
+        <div class="success-icon">✂️</div>
+        <div class="success-title">Bienvenue dans l'équipe !</div>
+        <p class="success-sub">Votre profil a été créé avec succès. Vous apparaissez maintenant dans la liste des coiffeurs disponibles à la réservation.</p>
+        <a href="sopranos-admin.html" class="btn" style="display:block;margin-top:24px;text-decoration:none;text-align:center;">Accéder à l'espace staff</a>
+      </div>
+    </div>
+  </div>
+  <a href="sopranos-barber.html" class="back-link">← Retour au site</a>
+</div>
+
+<script>
+const STAFF_KEY='sopranos_staff';
+const REGISTER_CODE='SOPRANOS2026'; // ← Change this code in the admin settings
+
+let regName='', regPass='';
+
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function hideErr(id){document.getElementById(id).style.display='none';}
+
+function checkCode(){
+  const code=document.getElementById('reg-code').value.trim().toUpperCase();
+  // Also check custom code saved by admin
+  const savedCode=localStorage.getItem('sopranos_register_code')||REGISTER_CODE;
+  if(code===savedCode){hideErr('err1');showStep(2);}
+  else showErr('err1','Code incorrect. Contactez le gérant.');
+}
+
+function goStep3(){
+  const name=document.getElementById('reg-name').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const pass2=document.getElementById('reg-pass2').value;
+  if(!name){showErr('err2','Veuillez entrer votre prénom.');return;}
+  if(pass.length<6){showErr('err2','Le mot de passe doit contenir au moins 6 caractères.');return;}
+  if(pass!==pass2){showErr('err2','Les mots de passe ne correspondent pas.');return;}
+  regName=name;regPass=pass;hideErr('err2');showStep(3);
+}
+
+function finishRegister(){
+  const start=parseInt(document.getElementById('reg-start').value);
+  const end=parseInt(document.getElementById('reg-end').value);
+  if(end<=start){showErr('err3','L\'heure de fin doit être après l\'heure de début.');return;}
+  const staff=JSON.parse(localStorage.getItem(STAFF_KEY)||'[]');
+  // Check name not already taken
+  if(staff.some(s=>s.name.toLowerCase()===regName.toLowerCase())){showErr('err3','Ce prénom est déjà utilisé. Choisissez un autre.');return;}
+  const member={
+    id:'staff_'+Date.now(),
+    name:regName,
+    password:regPass,
+    workStart:start,
+    workEnd:end,
+    active:true,
+    joinedAt:new Date().toLocaleString('fr-FR')
+  };
+  staff.push(member);
+  localStorage.setItem(STAFF_KEY,JSON.stringify(staff));
+  // Save credentials for login
+  const creds=JSON.parse(localStorage.getItem('sopranos_creds')||'{"admin":"sopranos2026"}');
+  creds[regName.toLowerCase()]=regPass;
+  localStorage.setItem('sopranos_creds',JSON.stringify(creds));
+  showStep(4);
+}
+</script>
+</body>
+</html>

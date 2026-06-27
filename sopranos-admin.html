@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sopranos Barber — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--gold:#C9A84C;--gold-light:#E8CC7A;--gold-dark:#9A7B35;--black:#0C0C0C;--charcoal:#141414;--surface:#1A1A1A;--surface2:#222;--cream:#F5F0E8;--gray:#8A8A8A;--border:rgba(201,168,76,.2);--green:#10b981;--red:#ef4444;--amber:#f59e0b;}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--cream);min-height:100vh;display:flex;}
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--black);z-index:500;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--surface);border:1px solid var(--border);padding:44px 38px;width:100%;max-width:380px;text-align:center;}
+.login-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--gold);letter-spacing:3px;margin-bottom:4px;}
+.login-sub{font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:28px;}
+.login-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:10px;font-size:.8rem;color:#fca5a5;margin-bottom:14px;display:none;}
+.li{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--cream);padding:12px 14px;font-family:'Inter',sans-serif;font-size:.88rem;outline:none;margin-bottom:14px;transition:border .3s;}
+.li:focus{border-color:var(--gold);}
+.lbl{font-size:.67rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);display:block;text-align:left;margin-bottom:6px;}
+.lbtn{width:100%;background:var(--gold);color:var(--black);border:none;padding:13px;font-weight:700;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.lbtn:hover{background:var(--gold-light);}
+.login-links{display:flex;gap:16px;justify-content:center;margin-top:16px;}
+.login-links a{color:var(--gray);font-size:.72rem;text-decoration:none;transition:color .2s;}
+.login-links a:hover{color:var(--gold);}
+/* SIDEBAR */
+.sidebar{width:225px;min-height:100vh;background:var(--charcoal);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;}
+.sb-logo{padding:24px 18px;border-bottom:1px solid var(--border);}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--gold);letter-spacing:2px;}
+.sb-user{font-size:.7rem;color:var(--gray);margin-top:3px;}
+.sb-nav{padding:12px 8px;flex:1;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;color:var(--gray);font-size:.83rem;font-weight:500;transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;border-right:2px solid transparent;}
+.sb-item:hover{background:var(--surface);color:var(--cream);}
+.sb-item.active{background:rgba(201,168,76,.1);color:var(--cream);border-right-color:var(--gold);}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:20px;}
+.sb-sep{height:1px;background:var(--border);margin:10px 8px;}
+.sb-footer{padding:14px;border-top:1px solid var(--border);font-size:.7rem;color:var(--gray);}
+/* MAIN */
+.main{margin-left:225px;flex:1;padding:28px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.page-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;}
+.notif-wrap{position:relative;}
+.notif-btn{background:var(--surface);border:1px solid var(--border);color:var(--gray);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;}
+.nd{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--red);border-radius:50%;display:none;}
+.nd.show{display:block;}
+/* PAGES */
+.page{display:none;}.page.active{display:block;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1px solid var(--border);padding:20px;}
+.kpi-lbl{font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:7px;}
+.kpi-val{font-size:1.9rem;font-weight:700;}
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);margin-bottom:18px;overflow:hidden;}
+.card-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-weight:600;font-size:.88rem;letter-spacing:.5px;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 14px;text-align:left;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);background:var(--surface2);border-bottom:1px solid var(--border);}
+td{padding:12px 14px;font-size:.82rem;border-bottom:1px solid rgba(201,168,76,.06);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.015);}
+/* BADGES */
+.badge{display:inline-flex;padding:3px 9px;font-size:.68rem;font-weight:700;}
+.bp{background:rgba(245,158,11,.15);color:var(--amber);}
+.bc{background:rgba(16,185,129,.15);color:var(--green);}
+.bd{background:rgba(138,138,138,.15);color:var(--gray);}
+.ba{background:rgba(239,68,68,.15);color:var(--red);}
+/* BTNS */
+.btn{padding:6px 11px;font-size:.73rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.bg{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3);}
+.bg:hover{background:var(--green);color:#fff;}
+.br{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.br:hover{background:var(--red);color:#fff;}
+.bo{background:var(--gold);color:var(--black);}
+.bo:hover{background:var(--gold-light);}
+.bam{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);}
+.bam:hover{background:var(--amber);color:#000;}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;}
+/* STAFF CARDS */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:18px;}
+.staff-card{background:var(--surface2);border:1px solid var(--border);padding:20px;}
+.staff-card-name{font-weight:700;font-size:1rem;margin-bottom:4px;}
+.staff-card-hours{font-size:.78rem;color:var(--gray);margin-bottom:12px;}
+.staff-revenue{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--gold);}
+.staff-revenue-lbl{font-size:.68rem;color:var(--gray);margin-bottom:4px;}
+/* SCHEDULE MANAGER */
+.schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px;}
+.schedule-card{background:var(--surface2);border:1px solid var(--border);padding:18px;}
+.s-lbl{font-size:.67rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px;margin-top:12px;}
+.s-lbl:first-child{margin-top:0;}
+.s-input,.s-select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--cream);padding:10px 12px;font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:border .2s;}
+.s-input:focus,.s-select:focus{border-color:var(--gold);}
+.s-select option{background:var(--surface);}
+.slot-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.slot-btn{background:var(--surface);border:1px solid var(--border);color:var(--cream);padding:6px 10px;font-size:.72rem;cursor:pointer;transition:all .2s;}
+.slot-btn:hover{border-color:var(--gold-dark);}
+.slot-btn.blocked{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:var(--red);}
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.setting-card{background:var(--surface);border:1px solid var(--border);padding:22px;}
+.setting-title{font-weight:700;margin-bottom:4px;}
+.setting-sub{font-size:.78rem;color:var(--gray);margin-bottom:16px;}
+/* TOAST */
+.notif-toast{position:fixed;top:16px;right:16px;background:var(--surface);border:1px solid var(--gold);padding:13px 17px;z-index:999;max-width:270px;animation:ts .3s ease;}
+@keyframes ts{from{transform:translateX(110%);opacity:0;}to{transform:none;opacity:1;}}
+.nt-title{font-weight:700;font-size:.83rem;margin-bottom:2px;}
+.nt-sub{color:var(--gray);font-size:.74rem;}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);padding:11px 18px;font-size:.83rem;z-index:999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;}
+#toast.show{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">SOPRANOS</div>
+    <div class="login-sub">Espace Staff</div>
+    <div class="login-err" id="login-err">Identifiants incorrects.</div>
+    <label class="lbl">Identifiant</label>
+    <input class="li" id="lu" type="text" placeholder="admin ou votre prénom">
+    <label class="lbl">Mot de passe</label>
+    <input class="li" id="lp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="lbtn" onclick="doLogin()">Connexion</button>
+    <div class="login-links">
+      <a href="sopranos-staff-register.html">S'inscrire (staff)</a>
+      <a href="sopranos-barber.html">← Site client</a>
+    </div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">SOPRANOS</div>
+    <div class="sb-user" id="sb-user">Admin</div>
+  </div>
+  <nav class="sb-nav">
+    <button class="sb-item active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="sb-item" onclick="showPage('bookings',this)">📋 Rendez-vous<span class="sb-badge" id="sb-badge" style="display:none">0</span></button>
+    <button class="sb-item" onclick="showPage('history',this)">🕐 Historique</button>
+    <div class="sb-sep"></div>
+    <button class="sb-item" onclick="showPage('staff',this)">✂️ Mon équipe</button>
+    <button class="sb-item" onclick="showPage('schedule',this)">🗓️ Gérer planning</button>
+    <div class="sb-sep"></div>
+    <button class="sb-item" onclick="showPage('settings',this)">⚙️ Paramètres</button>
+  </nav>
+  <div class="sb-footer">06 49 96 28 00 · Ben Guerir</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">Dashboard</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div class="notif-wrap"><button class="notif-btn" onclick="showPage('bookings',document.querySelectorAll('.sb-item')[1])">🔔</button><div class="nd" id="nd"></div></div>
+      <div style="background:var(--gold);width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--black);" id="user-avatar">A</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div class="card"><div class="card-hd"><div class="card-title">📋 Derniers RDV</div></div><div id="dash-recent"></div></div>
+      <div class="card"><div class="card-hd"><div class="card-title">✂️ Performance coiffeurs</div></div><div id="dash-barbers"></div></div>
+    </div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div id="page-bookings" class="page">
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Rendez-vous actifs</div>
+        <div style="display:flex;gap:8px;">
+          <select id="filter-barber" class="s-select" style="padding:5px 10px;font-size:.75rem;" onchange="renderBookings()">
+            <option value="">Tous les coiffeurs</option>
+          </select>
+          <button class="btn br" onclick="if(confirm('Vider?')){clearByStatus(['En attente','Confirmé']);renderBookings();renderDashboard();}">🗑️ Vider</button>
+        </div>
+      </div>
+      <div id="bookings-table"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div class="card"><div class="card-hd"><div class="card-title">Historique complet</div></div><div id="history-table"></div></div>
+  </div>
+
+  <!-- STAFF -->
+  <div id="page-staff" class="page">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">✂️ Équipe & Revenus</div><a href="sopranos-staff-register.html" class="btn bo">+ Inviter un membre</a></div>
+      <div class="staff-grid" id="staff-grid"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div id="page-schedule" class="page">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">🗓️ Bloquer des jours / créneaux</div></div>
+      <div class="schedule-grid" id="schedule-grid">
+        <div style="padding:20px;color:var(--gray);font-size:.85rem;">Chargement...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <div class="settings-grid">
+      <div class="setting-card">
+        <div class="setting-title">Code d'inscription staff</div>
+        <div class="setting-sub">Code que les nouveaux coiffeurs entrent pour s'inscrire.</div>
+        <label class="lbl">Code actuel</label>
+        <input class="s-input" id="s-regcode" style="font-family:monospace;font-size:1rem;letter-spacing:3px;" value="SOPRANOS2026">
+        <button class="btn bo" style="margin-top:12px;" onclick="saveRegCode()">💾 Enregistrer</button>
+      </div>
+      <div class="setting-card">
+        <div class="setting-title">Changer mon mot de passe</div>
+        <div class="setting-sub">Nouveau mot de passe pour votre compte.</div>
+        <label class="lbl">Nouveau MDP</label>
+        <input class="s-input" id="s-np" type="password" placeholder="Nouveau mot de passe">
+        <label class="lbl" style="margin-top:10px;">Confirmer</label>
+        <input class="s-input" id="s-cp" type="password" placeholder="Confirmer">
+        <button class="btn bo" style="margin-top:12px;" onclick="changePwd()">🔐 Changer</button>
+      </div>
+      <div class="setting-card">
+        <div class="setting-title">Export données</div>
+        <div class="setting-sub">Téléchargez tous les rendez-vous.</div>
+        <button class="btn bo" style="margin-top:8px;" onclick="exportData()">📥 Exporter JSON</button>
+      </div>
+      <div class="setting-card">
+        <div class="setting-title" style="color:var(--red);">Danger Zone</div>
+        <div class="setting-sub">Actions irréversibles.</div>
+        <button class="btn br" onclick="if(confirm('Réinitialiser TOUT?')){localStorage.clear();location.reload();}">🗑️ Réinitialiser tout</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const BK='sopranos_bookings';
+const SK='sopranos_staff';
+const BLK='sopranos_blocked';
+const CK='sopranos_creds';
+const TS='sopranos_new_booking_ts';
+let lastTs=parseInt(localStorage.getItem('sopranos_last_ts')||'0');
+let currentUser='';
+
+function G(k){return JSON.parse(localStorage.getItem(k)||'[]');}
+function GB(){return JSON.parse(localStorage.getItem(BK)||'[]');}
+function SB(b){localStorage.setItem(BK,JSON.stringify(b));}
+function GS(){return G(SK);}
+function getBlocked(){return JSON.parse(localStorage.getItem(BLK)||'{}');}
+function saveBlocked(b){localStorage.setItem(BLK,JSON.stringify(b));}
+
+/* LOGIN */
+function doLogin(){
+  const u=document.getElementById('lu').value.trim().toLowerCase();
+  const p=document.getElementById('lp').value;
+  const creds=JSON.parse(localStorage.getItem(CK)||'{"admin":"sopranos2026"}');
+  if(creds[u]&&creds[u]===p){
+    sessionStorage.setItem('sb_admin','1');
+    sessionStorage.setItem('sb_user',u);
+    currentUser=u;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('sb-user').textContent=u.charAt(0).toUpperCase()+u.slice(1);
+    document.getElementById('user-avatar').textContent=u.charAt(0).toUpperCase();
+    renderDashboard();checkNew();
+    showToast('Bienvenue !');
+  } else {
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('lp').value='';
+    setTimeout(()=>document.getElementById('login-err').style.display='none',3000);
+  }
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('sb_admin')==='1'){
+    currentUser=sessionStorage.getItem('sb_user')||'admin';
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('sb-user').textContent=currentUser.charAt(0).toUpperCase()+currentUser.slice(1);
+    document.getElementById('user-avatar').textContent=currentUser.charAt(0).toUpperCase();
+    renderDashboard();checkNew();
+  }
+});
+
+/* NAV */
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const titles={dashboard:'Dashboard',bookings:'Rendez-vous',history:'Historique',staff:'Mon équipe',schedule:'Gérer le planning',settings:'Paramètres'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  if(name==='dashboard')renderDashboard();
+  else if(name==='bookings')renderBookings();
+  else if(name==='history')renderHistory();
+  else if(name==='staff')renderStaff();
+  else if(name==='schedule')renderSchedule();
+}
+
+/* DASHBOARD */
+function renderDashboard(){
+  const all=GB();const staff=GS();
+  const pending=all.filter(b=>b.status==='En attente').length;
+  const confirmed=all.filter(b=>b.status==='Confirmé').length;
+  const done=all.filter(b=>b.status==='Terminé').length;
+  const revenue=all.filter(b=>b.status==='Terminé').reduce((s,b)=>s+(b.price||0),0);
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi"><div class="kpi-lbl">En attente</div><div class="kpi-val" style="color:var(--amber)">${pending}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Confirmés</div><div class="kpi-val" style="color:var(--green)">${confirmed}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Terminés</div><div class="kpi-val">${done}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Revenus totaux</div><div class="kpi-val" style="color:var(--gold)">${revenue} MAD</div></div>
+    <div class="kpi"><div class="kpi-lbl">Coiffeurs actifs</div><div class="kpi-val">${staff.filter(s=>s.active).length}</div></div>`;
+  const recent=all.slice(-5).reverse();
+  document.getElementById('dash-recent').innerHTML=recent.length
+    ?`<table><thead><tr><th>Client</th><th>Coiffeur</th><th>Service</th><th>Statut</th></tr></thead><tbody>${recent.map(b=>`<tr><td>${b.name}</td><td style="color:var(--gold)">${b.barberName||'—'}</td><td style="font-size:.76rem;color:var(--gray)">${b.service}</td><td>${badge(b.status)}</td></tr>`).join('')}</tbody></table>`
+    :`<div style="padding:24px;text-align:center;color:var(--gray);font-size:.83rem;">Aucun rendez-vous</div>`;
+  // Barber performance
+  const byBarber={};
+  all.filter(b=>b.status==='Terminé').forEach(b=>{
+    if(!byBarber[b.barberName])byBarber[b.barberName]={count:0,revenue:0};
+    byBarber[b.barberName].count++;
+    byBarber[b.barberName].revenue+=(b.price||0);
+  });
+  const rows=Object.entries(byBarber).sort((a,b)=>b[1].revenue-a[1].revenue);
+  document.getElementById('dash-barbers').innerHTML=rows.length
+    ?`<div style="padding:14px;">${rows.map(([name,d])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:.83rem;"><span>✂️ ${name}</span><div style="text-align:right;"><div style="color:var(--gold);font-weight:700;">${d.revenue} MAD</div><div style="color:var(--gray);font-size:.72rem;">${d.count} RDV</div></div></div>`).join('')}</div>`
+    :`<div style="padding:24px;text-align:center;color:var(--gray);font-size:.83rem;">Aucune donnée</div>`;
+}
+
+/* BADGE */
+function badge(s){const m={'En attente':'bp','Confirmé':'bc','Terminé':'bd','Annulé':'ba'};return `<span class="badge ${m[s]||''}">${s}</span>`;}
+
+/* BOOKINGS */
+function renderBookings(){
+  const staff=GS();
+  const sel=document.getElementById('filter-barber');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Tous les coiffeurs</option>'+staff.map(s=>`<option value="${s.id}"${cur===s.id?' selected':''}>${s.name}</option>`).join('');
+    sel.value=cur;
+  }
+  const filterBarber=sel?.value||'';
+  let all=GB().filter(b=>!['Terminé','Annulé'].includes(b.status));
+  if(filterBarber)all=all.filter(b=>b.barberId===filterBarber);
+  // Staff see only their own bookings
+  if(currentUser!=='admin'){
+    const me=staff.find(s=>s.name.toLowerCase()===currentUser);
+    if(me)all=all.filter(b=>b.barberId===me.id);
+  }
+  const el=document.getElementById('bookings-table');
+  if(!all.length){el.innerHTML=`<div style="padding:28px;text-align:center;color:var(--gray);">Aucun rendez-vous actif ✨</div>`;return;}
+  el.innerHTML=`<table><thead><tr><th>Réf</th><th>Client</th><th>Téléphone</th><th>Coiffeur</th><th>Service</th><th>Prix</th><th>Date</th><th>Heure</th><th>Statut</th><th>Actions</th></tr></thead>
+  <tbody>${[...all].sort((a,b)=>a.date>b.date?1:-1).map(b=>`<tr>
+    <td style="font-family:monospace;font-size:.7rem;color:var(--gold)">${b.id}</td>
+    <td style="font-weight:600">${b.name}</td>
+    <td><a href="https://wa.me/212${b.phone.replace(/\D/g,'').replace(/^0/,'')}" target="_blank" style="color:var(--green);text-decoration:none;">📱 ${b.phone}</a></td>
+    <td style="color:var(--gold)">${b.barberName||'—'}</td>
+    <td style="font-size:.78rem;color:var(--gray)">${b.service}</td>
+    <td style="font-weight:700;color:var(--gold)">${b.price||0} MAD</td>
+    <td>${b.date}</td><td>${b.time}</td>
+    <td>${badge(b.status)}</td>
+    <td><div class="btn-row">
+      ${b.status==='En attente'?`<button class="btn bg" onclick="upd('${b.id}','Confirmé')">✓</button>`:''}
+      ${b.status!=='Terminé'?`<button class="btn bo" onclick="upd('${b.id}','Terminé')">✅</button>`:''}
+      <button class="btn br" onclick="upd('${b.id}','Annulé')">✕</button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function upd(id,status){
+  const all=GB();const b=all.find(x=>x.id===id);
+  if(b){b.status=status;SB(all);}
+  showToast('✅ '+status);renderBookings();renderDashboard();
+}
+
+function clearByStatus(statuses){
+  SB(GB().filter(b=>!statuses.includes(b.status)));
+}
+
+/* HISTORY */
+function renderHistory(){
+  const all=GB();
+  const el=document.getElementById('history-table');
+  if(!all.length){el.innerHTML=`<div style="padding:28px;text-align:center;color:var(--gray);">Aucun historique</div>`;return;}
+  el.innerHTML=`<table><thead><tr><th>Réf</th><th>Client</th><th>Coiffeur</th><th>Service</th><th>Prix</th><th>Date</th><th>Statut</th></tr></thead>
+  <tbody>${[...all].reverse().map(b=>`<tr>
+    <td style="font-family:monospace;font-size:.7rem;color:var(--gold)">${b.id}</td>
+    <td>${b.name}</td><td style="color:var(--gold)">${b.barberName||'—'}</td>
+    <td style="font-size:.78rem">${b.service}</td>
+    <td style="color:var(--gold)">${b.price||0} MAD</td>
+    <td>${b.date} ${b.time}</td><td>${badge(b.status)}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+/* STAFF */
+function renderStaff(){
+  const staff=GS();const all=GB();
+  const el=document.getElementById('staff-grid');
+  if(!staff.length){el.innerHTML=`<div style="padding:24px;color:var(--gray);font-size:.85rem;">Aucun coiffeur inscrit. <a href="sopranos-staff-register.html" style="color:var(--gold);">Inviter →</a></div>`;return;}
+  el.innerHTML=staff.map(s=>{
+    const done=all.filter(b=>b.barberId===s.id&&b.status==='Terminé');
+    const revenue=done.reduce((sum,b)=>sum+(b.price||0),0);
+    const pending=all.filter(b=>b.barberId===s.id&&b.status==='En attente').length;
+    return `<div class="staff-card">
+      <div class="staff-card-name">✂️ ${s.name}</div>
+      <div class="staff-card-hours">🕐 ${s.workStart}h → ${s.workEnd}h</div>
+      <div class="staff-revenue-lbl">Revenus totaux</div>
+      <div class="staff-revenue">${revenue} MAD</div>
+      <div style="font-size:.75rem;color:var(--gray);margin:6px 0 14px;">${done.length} RDV terminés · ${pending} en attente</div>
+      <div class="btn-row">
+        <button class="btn ${s.active!==false?'br':'bg'}" onclick="toggleStaff('${s.id}')">${s.active!==false?'Désactiver':'Activer'}</button>
+        <button class="btn br" onclick="deleteStaff('${s.id}')">🗑️</button>
+      </div>
+    </div>`;}).join('');
+}
+
+function toggleStaff(id){
+  const staff=GS();const s=staff.find(x=>x.id===id);
+  if(s){s.active=s.active===false?true:false;localStorage.setItem(SK,JSON.stringify(staff));}
+  renderStaff();showToast('✅ Statut mis à jour');
+}
+function deleteStaff(id){
+  if(!confirm('Supprimer ce coiffeur?'))return;
+  const staff=GS().filter(s=>s.id!==id);localStorage.setItem(SK,JSON.stringify(staff));
+  renderStaff();showToast('🗑️ Supprimé');
+}
+
+/* SCHEDULE */
+function renderSchedule(){
+  const staff=GS();
+  const blocked=getBlocked();
+  const today=new Date();
+  const el=document.getElementById('schedule-grid');
+  if(!staff.length){el.innerHTML=`<div style="padding:20px;color:var(--gray);">Aucun coiffeur inscrit.</div>`;return;}
+
+  el.innerHTML=staff.map(s=>{
+    const slots=[];
+    for(let h=s.workStart;h<s.workEnd;h++) slots.push(`${String(h).padStart(2,'0')}:00`);
+    // Next 7 days
+    const days=[];
+    for(let d=0;d<7;d++){const dt=new Date(today);dt.setDate(today.getDate()+d);days.push(dt.toISOString().slice(0,10));}
+
+    return `<div class="schedule-card">
+      <div style="font-weight:700;margin-bottom:14px;">✂️ ${s.name}</div>
+      <label class="s-lbl">Bloquer une journée complète</label>
+      <select class="s-select" id="blk-day-${s.id}">
+        ${days.map(d=>`<option value="${d}">${d}</option>`).join('')}
+      </select>
+      <button class="btn bo" style="margin-top:8px;" onclick="blockDay('${s.id}')">🚫 Bloquer ce jour</button>
+
+      <label class="s-lbl" style="margin-top:16px;">Bloquer un créneau</label>
+      <select class="s-select" id="blk-slot-day-${s.id}">
+        ${days.map(d=>`<option value="${d}">${d}</option>`).join('')}
+      </select>
+      <div class="slot-grid" style="margin-top:8px;">
+        ${slots.map(t=>{
+          const allBlocked=Object.keys(blocked).filter(k=>k.startsWith('ALLDAY_'+s.id+'_'));
+          const key=`${days[0]}_${s.id}_${t}`;
+          const isBlocked=blocked[key]===true;
+          return `<button class="slot-btn${isBlocked?' blocked':''}" id="sbtn-${s.id}-${t.replace(':','')}" onclick="toggleSlot('${s.id}','${t}')">${t}</button>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function blockDay(barberId){
+  const day=document.getElementById('blk-day-'+barberId)?.value;
+  if(!day)return;
+  const blocked=getBlocked();
+  const key=`${day}_${barberId}_all`;
+  blocked[key]=true;
+  saveBlocked(blocked);
+  showToast(`🚫 ${day} bloqué pour ce coiffeur`);
+}
+
+function toggleSlot(barberId,time){
+  const day=document.getElementById('blk-slot-day-'+barberId)?.value;
+  if(!day)return;
+  const blocked=getBlocked();
+  const key=`${day}_${barberId}_${time}`;
+  blocked[key]=!blocked[key];
+  saveBlocked(blocked);
+  const btn=document.getElementById(`sbtn-${barberId}-${time.replace(':','')}`);
+  if(btn){
+    btn.classList.toggle('blocked',blocked[key]);
+    btn.title=blocked[key]?'Cliqué pour débloquer':'';
+  }
+  showToast(blocked[key]?'🚫 Créneau bloqué':'✅ Créneau débloqué');
+}
+
+/* NOTIFICATIONS */
+function playSound(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[523,0],[659,.15],[784,.3],[1047,.5]].forEach(([f,t])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=f;
+      const st=ctx.currentTime+t;
+      g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.28,st+.04);g.gain.linearRampToValueAtTime(0,st+.25);
+      o.start(st);o.stop(st+.3);
+    });
+  }catch(e){}
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function notifToast(title,sub){
+  const d=document.createElement('div');d.className='notif-toast';
+  d.innerHTML=`<div class="nt-title">${title}</div><div class="nt-sub">${sub}</div>`;
+  document.body.appendChild(d);setTimeout(()=>d.remove(),6000);
+}
+function checkNew(){
+  const ts=parseInt(localStorage.getItem(TS)||'0');
+  const pending=GB().filter(b=>b.status==='En attente').length;
+  const badge=document.getElementById('sb-badge');const dot=document.getElementById('nd');
+  if(ts>lastTs){
+    lastTs=ts;localStorage.setItem('sopranos_last_ts',ts.toString());
+    dot.classList.add('show');notifToast('✂️ Nouveau rendez-vous !','Un client vient de réserver.');
+    playSound();
+    if('Notification'in window&&Notification.permission==='granted')
+      new Notification('Sopranos Barber',{body:'Nouveau rendez-vous reçu !'});
+  }
+  if(pending>0){badge.style.display='inline-block';badge.textContent=pending;}
+  else{badge.style.display='none';dot.classList.remove('show');}
+}
+if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
+window.addEventListener('storage',e=>{if(e.key===TS||e.key===BK)checkNew();});
+setInterval(()=>{if(sessionStorage.getItem('sb_admin')==='1')checkNew();},8000);
+
+/* SETTINGS */
+function saveRegCode(){
+  const code=document.getElementById('s-regcode').value.trim().toUpperCase();
+  if(!code){showToast('Code vide');return;}
+  localStorage.setItem('sopranos_register_code',code);showToast('✅ Code enregistré: '+code);
+}
+function changePwd(){
+  const np=document.getElementById('s-np').value;const cp=document.getElementById('s-cp').value;
+  if(np.length<6){showToast('MDP trop court');return;}
+  if(np!==cp){showToast('MDP ne correspondent pas');return;}
+  const creds=JSON.parse(localStorage.getItem(CK)||'{"admin":"sopranos2026"}');
+  creds[currentUser]=np;localStorage.setItem(CK,JSON.stringify(creds));
+  showToast('✅ MDP changé');document.getElementById('s-np').value='';document.getElementById('s-cp').value='';
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify({bookings:GB(),staff:GS()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='sopranos-data-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  showToast('📥 Exporté');
+}
+</script>
+</body>
+</html>
